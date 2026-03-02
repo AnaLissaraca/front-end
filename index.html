@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema Escolar</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:   #1a73e8;
+      --primary-d: #1558b0;
+      --accent:    #fbbc04;
+      --success:   #34a853;
+      --danger:    #ea4335;
+      --warn:      #ff6d00;
+      --bg:        #f0f4ff;
+      --card:      #ffffff;
+      --text:      #202124;
+      --muted:     #5f6368;
+      --border:    #dadce0;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #0d47a1 100%);
+      color: #fff;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    header .logo { display: flex; align-items: center; gap: 12px; }
+    header .logo span.icon { font-size: 28px; }
+    header .logo h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: .5px; }
+    header .student-info { font-size: .85rem; opacity: .9; text-align: right; }
+    header .student-info strong { display: block; font-size: 1rem; }
+
+    /* ===== NAV TABS ===== */
+    nav {
+      background: var(--card);
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      padding: 0 16px;
+    }
+    nav button {
+      background: none; border: none; cursor: pointer;
+      padding: 14px 20px;
+      font-size: .9rem; font-weight: 600;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: color .2s, border-color .2s;
+    }
+    nav button:hover { color: var(--primary); }
+    nav button.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ===== MAIN LAYOUT ===== */
+    main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 60px; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ===== SECTION TITLE ===== */
+    .section-title {
+      font-size: 1.35rem; font-weight: 700;
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+      color: var(--primary-d);
+    }
+    .section-title .icon { font-size: 1.5rem; }
+
+    /* ===== CARDS GRID ===== */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      border-top: 5px solid var(--primary);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.14); }
+
+    .card-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 46px; height: 46px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .card-title { font-size: 1.05rem; font-weight: 700; }
+    .card-sub   { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-wrap { margin: 10px 0 6px; }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: .78rem; color: var(--muted); margin-bottom: 4px;
+    }
+    .progress-bar {
+      height: 8px; border-radius: 99px;
+      background: #e8eaed; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      transition: width .6s ease;
+    }
+
+    /* ===== BADGES ===== */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px; border-radius: 99px;
+      font-size: .75rem; font-weight: 700;
+    }
+    .badge-success { background: #e6f4ea; color: var(--success); }
+    .badge-danger  { background: #fce8e6; color: var(--danger);  }
+    .badge-warn    { background: #fff3e0; color: var(--warn);    }
+    .badge-info    { background: #e8f0fe; color: var(--primary); }
+
+    /* ===== STAT ROW ===== */
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid var(--border);
+      font-size: .88rem;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .label { color: var(--muted); }
+    .stat-row .value { font-weight: 700; }
+
+    /* ===== SUMMARY BOXES ===== */
+    .summary-boxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .summary-box {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      text-align: center;
+    }
+    .summary-box .big { font-size: 2rem; font-weight: 800; }
+    .summary-box .lbl { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+
+    /* ===== TABLE ===== */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    thead tr { background: var(--primary); color: #fff; }
+    thead th { padding: 13px 16px; text-align: left; font-size: .85rem; font-weight: 700; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8f9ff; }
+    tbody td { padding: 12px 16px; font-size: .88rem; }
+
+    /* ===== SCHEDULE TABLE ===== */
+    .schedule-table thead tr { background: #0d47a1; }
+    .schedule-table td { text-align: center; }
+    .schedule-table .slot {
+      padding: 8px 6px; border-radius: 8px;
+      font-size: .82rem; font-weight: 600;
+      display: inline-block; width: 100%;
+    }
+
+    /* ===== RULES CARD ===== */
+    .rules-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      max-width: 680px;
+    }
+    .rule-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .rule-item:last-child { border-bottom: none; }
+    .rule-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; flex-shrink: 0;
+    }
+    .rule-text h4 { font-size: .95rem; font-weight: 700; margin-bottom: 4px; }
+    .rule-text p  { font-size: .84rem; color: var(--muted); line-height: 1.5; }
+
+    /* ===== COLORS PER SUBJECT ===== */
+    .mat { --c: #1a73e8; }
+    .por { --c: #34a853; }
+    .ing { --c: #9c27b0; }
+    .ef  { --c: #ff6d00; }
+    .fis { --c: #00838f; }
+    .qui { --c: #e53935; }
+
+    .card.mat { border-top-color: #1a73e8; }
+    .card.por { border-top-color: #34a853; }
+    .card.ing { border-top-color: #9c27b0; }
+    .card.ef  { border-top-color: #ff6d00; }
+    .card.fis { border-top-color: #00838f; }
+    .card.qui { border-top-color: #e53935; }
+
+    .card-icon.mat { background: #e8f0fe; color: #1a73e8; }
+    .card-icon.por { background: #e6f4ea; color: #34a853; }
+    .card-icon.ing { background: #f3e5f5; color: #9c27b0; }
+    .card-icon.ef  { background: #fff3e0; color: #ff6d00; }
+    .card-icon.fis { background: #e0f7fa; color: #00838f; }
+    .card-icon.qui { background: #ffebee; color: #e53935; }
+
+    .slot.mat { background: #e8f0fe; color: #1a73e8; }
+    .slot.por { background: #e6f4ea; color: #34a853; }
+    .slot.ing { background: #f3e5f5; color: #9c27b0; }
+    .slot.ef  { background: #fff3e0; color: #ff6d00; }
+    .slot.fis { background: #e0f7fa; color: #00838f; }
+    .slot.qui { background: #ffebee; color: #e53935; }
+    .slot.vazio { background: #f1f3f4; color: #9aa0a6; font-weight: 400; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      header .student-info { display: none; }
+      nav button { padding: 12px 14px; font-size: .8rem; }
+      .summary-boxes { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo">
+    <span class="icon">🏫</span>
+    <h1>Sistema Escolar</h1>
+  </div>
+  <div class="student-info">
+    <strong>Ana Beatriz Souza</strong>
+    2º Ano — Ensino Médio · 2025
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <button class="active" onclick="showPage('notas')">📊 Notas</button>
+  <button onclick="showPage('faltas')">📅 Faltas</button>
+  <button onclick="showPage('horario')">🗓️ Horário</button>
+  <button onclick="showPage('professores')">👩‍🏫 Professores</button>
+  <button onclick="showPage('regras')">📋 Regras</button>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ========== NOTAS ========== -->
+  <div id="page-notas" class="page active">
+    <div class="section-title"><span class="icon">📊</span> Boletim de Notas</div>
+
+    <!-- Summary -->
+    <div class="summary-boxes" id="summary-notas"></div>
+
+    <!-- Cards -->
+    <div class="cards-grid" id="cards-notas"></div>
+  </div>
+
+  <!-- ========== FALTAS ========== -->
+  <div id="page-faltas" class="page">
+    <div class="section-title"><span class="icon">📅</span> Controle de Faltas</div>
+
+    <div class="summary-boxes" id="summary-faltas"></div>
+
+    <div class="cards-grid" id="cards-faltas"></div>
+  </div>
+
+  <!-- ========== HORÁRIO ========== -->
+  <div id="page-horario" class="page">
+    <div class="section-title"><span class="icon">🗓️</span> Horário Semanal</div>
+    <div class="table-wrap">
+      <table class="schedule-table" id="schedule-table">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Segunda-feira</th>
+            <th>Terça-feira</th>
+            <th>Quarta-feira</th>
+            <th>Quinta-feira</th>
+            <th>Sexta-feira</th>
+          </tr>
+        </thead>
+        <tbody id="schedule-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== PROFESSORES ========== -->
+  <div id="page-professores" class="page">
+    <div class="section-title"><span class="icon">👩‍🏫</span> Professores</div>
+    <div class="table-wrap">
+      <table id="prof-table">
+        <thead>
+          <tr>
+            <th>Matéria</th>
+            <th>Professor(a)</th>
+            <th>E-mail</th>
+            <th>Dias de Aula</th>
+          </tr>
+        </thead>
+        <tbody id="prof-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== REGRAS ========== -->
+  <div id="page-regras" class="page">
+    <div class="section-title"><span class="icon">📋</span> Regras de Aprovação</div>
+    <div class="rules-card">
+      <div class="rule-item">
+        <div class="rule-icon" style="background:#e8f0fe">📝</div>
+        <div class="rule-text">
+          <h4>Média mínima para aprovação</h4>
+          <p>O aluno precisa obter média igual ou superior a <strong>70 pontos</strong> em cada matéria para ser considerado aprovado naquela disciplina.</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:#e6f4ea">🏆</div>
+        <div class="rule-text">
+          <h4>Matérias necessárias para passar de ano</h4>
+          <p>Para ser aprovado no ano letivo, o aluno deve ser aprovado em pelo menos <strong>6 matérias</strong> (todas as disciplinas). Reprovar em qualquer matéria com média abaixo de 70 implica em recuperação ou reprovação.</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:#fff3e0">⚠️</div>
+        <div class="rule-text">
+          <h4>Limite de faltas — Aprovação</h4>
+          <p>O aluno pode ter até <strong>179 faltas</strong> no total (em todas as matérias) e ainda ser aprovado por frequência. O limite é de <strong>menos de 180 faltas</strong>.</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:#fce8e6">🚫</div>
+        <div class="rule-text">
+          <h4>Reprovação por faltas</h4>
+          <p>Ao atingir <strong>180 faltas ou mais</strong>, o aluno é automaticamente reprovado por falta de frequência, independentemente das notas obtidas nas avaliações.</p>
+        </div>
+      </div>
+      <div class="rule-item">
+        <div class="rule-icon" style="background:#f3e5f5">📆</div>
+        <div class="rule-text">
+          <h4>Dias de aula</h4>
+          <p>As aulas ocorrem de <strong>segunda-feira a sexta-feira</strong>, com diferentes disciplinas distribuídas ao longo da semana conforme o horário oficial da turma.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* =========================================================
+   DADOS
+   ========================================================= */
+
+const LIMITE_FALTAS_REPROVACAO = 180;
+const MEDIA_MINIMA = 70;
+const MATERIAS_PARA_PASSAR = 6;
+
+const materias = [
+  { id: 'mat', nome: 'Matemática',       icone: '📐', professor: 'Prof. Carlos Eduardo Mendes',    email: 'carlos.mendes@escola.edu.br',    dias: ['Segunda', 'Quarta', 'Sexta']      },
+  { id: 'por', nome: 'Português',        icone: '📖', professor: 'Profa. Fernanda Lima Carvalho',  email: 'fernanda.lima@escola.edu.br',    dias: ['Segunda', 'Terça', 'Quinta']      },
+  { id: 'ing', nome: 'Inglês',           icone: '🌎', professor: 'Prof. Roberto Alves Santos',     email: 'roberto.alves@escola.edu.br',   dias: ['Terça', 'Quinta']                 },
+  { id: 'ef',  nome: 'Educação Física',  icone: '⚽', professor: 'Profa. Juliana Costa Ribeiro',   email: 'juliana.costa@escola.edu.br',   dias: ['Quarta', 'Sexta']                 },
+  { id: 'fis', nome: 'Física',           icone: '⚛️',  professor: 'Prof. Marcelo Teixeira Nunes',   email: 'marcelo.teixeira@escola.edu.br', dias: ['Segunda', 'Quinta']               },
+  { id: 'qui', nome: 'Química',          icone: '🧪', professor: 'Profa. Patrícia Moura Figueiredo',email: 'patricia.moura@escola.edu.br',  dias: ['Terça', 'Sexta']                  },
+];
+
+/* Notas por bimestre (1B, 2B, 3B, 4B) */
+const notas = {
+  mat: [72, 68, 75, 80],
+  por: [85, 90, 78, 88],
+  ing: [60, 65, 70, 74],
+  ef:  [95, 92, 97, 90],
+  fis: [55, 62, 70, 73],
+  qui: [48, 55, 65, 72],
+};
+
+/* Faltas por matéria */
+const faltas = {
+  mat: 22,
+  por: 10,
+  ing: 35,
+  ef:  5,
+  fis: 28,
+  qui: 42,
+};
+
+/* Horário: [horário][dia] */
+const horarios = [
+  '07:00 – 07:50',
+  '07:50 – 08:40',
+  '08:40 – 09:30',
+  '09:30 – 10:00 (Intervalo)',
+  '10:00 – 10:50',
+  '10:50 – 11:40',
+  '11:40 – 12:30',
+];
+
+/* grade[horario][dia] = id da matéria ou '' */
+const grade = [
+  /* Seg    Ter    Qua    Qui    Sex  */
+  ['mat', 'por', 'ef',  'fis', 'mat'],
+  ['fis', 'ing', 'mat', 'por', 'qui'],
+  ['por', 'qui', 'fis', 'ing', 'ef' ],
+  ['',    '',    '',    '',    ''   ],  /* intervalo */
+  ['mat', 'por', 'qui', 'mat', 'fis'],
+  ['ing', 'fis', 'por', 'qui', 'por'],
+  ['qui', 'mat', 'ing', 'ef',  'ing'],
+];
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function media(arr) {
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function statusNota(m) {
+  const md = media(notas[m.id]);
+  if (md >= MEDIA_MINIMA) return { label: 'Aprovado', cls: 'badge-success' };
+  if (md >= MEDIA_MINIMA - 10) return { label: 'Recuperação', cls: 'badge-warn' };
+  return { label: 'Reprovado', cls: 'badge-danger' };
+}
+
+function statusFalta(m) {
+  const f = faltas[m.id];
+  if (f >= LIMITE_FALTAS_REPROVACAO) return { label: 'Reprovado', cls: 'badge-danger' };
+  if (f >= LIMITE_FALTAS_REPROVACAO * 0.75) return { label: 'Atenção', cls: 'badge-warn' };
+  return { label: 'Regular', cls: 'badge-success' };
+}
+
+function nomeMateria(id) {
+  const m = materias.find(x => x.id === id);
+  return m ? m.nome : '';
+}
+
+function iconeMateria(id) {
+  const m = materias.find(x => x.id === id);
+  return m ? m.icone : '';
+}
+
+/* =========================================================
+   RENDERIZAR NOTAS
+   ========================================================= */
+
+function renderNotas() {
+  /* Summary */
+  const aprovadas = materias.filter(m => media(notas[m.id]) >= MEDIA_MINIMA).length;
+  const totalFaltas = Object.values(faltas).reduce((a, b) => a + b, 0);
+  const mediaGeral = materias.reduce((a, m) => a + media(notas[m.id]), 0) / materias.length;
+
+  const sb = document.getElementById('summary-notas');
+  sb.innerHTML = `
+    <div class="summary-box">
+      <div class="big" style="color:var(--primary)">${mediaGeral.toFixed(1)}</div>
+      <div class="lbl">Média Geral</div>
+    </div>
+    <div class="summary-box">
+      <div class="big" style="color:var(--success)">${aprovadas}</div>
+      <div class="lbl">Matérias Aprovadas</div>
+    </div>
+    <div class="summary-box">
+      <div class="big" style="color:${aprovadas >= MATERIAS_PARA_PASSAR ? 'var(--success)' : 'var(--danger)'}">${aprovadas >= MATERIAS_PARA_PASSAR ? '✔' : '✘'}</div>
+      <div class="lbl">Passa de Ano?</div>
+    </div>
+    <div class="summary-box">
+      <div class="big" style="color:var(--warn)">${totalFaltas}</div>
+      <div class="lbl">Total de Faltas</div>
+    </div>
+  `;
+
+  /* Cards */
+  const grid = document.getElementById('cards-notas');
+  grid.innerHTML = '';
+
+  materias.forEach(m => {
+    const bims = notas[m.id];
+    const md = media(bims);
+    const st = statusNota(m);
+    const pct = Math.min((md / 100) * 100, 100);
+    const fillColor = md >= MEDIA_MINIMA ? 'var(--success)' : md >= 60 ? 'var(--warn)' : 'var(--danger)';
+
+    const card = document.createElement('div');
+    card.className = `card ${m.id}`;
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-icon ${m.id}">${m.icone}</div>
+        <div>
+          <div class="card-title">${m.nome}</div>
+          <div class="card-sub">${m.professor}</div>
+        </div>
+        <span class="badge ${st.cls}" style="margin-left:auto">${st.label}</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Média</span>
+          <span><strong>${md.toFixed(1)}</strong> / 100</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${fillColor}"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        ${bims.map((n, i) => `
+          <div class="stat-row">
+            <span class="label">${i+1}º Bimestre</span>
+            <span class="value" style="color:${n >= MEDIA_MINIMA ? 'var(--success)' : 'var(--danger)'}">${n}</span>
+          </div>
+        `).join('')}
+        <div class="stat-row" style="margin-top:6px;background:#f8f9ff;border-radius:8px;padding:8px 6px">
+          <span class="label"><strong>Média Final</strong></span>
+          <span class="value" style="font-size:1.05rem;color:${md >= MEDIA_MINIMA ? 'var(--success)' : 'var(--danger)'}">${md.toFixed(1)}</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* =========================================================
+   RENDERIZAR FALTAS
+   ========================================================= */
+
+function renderFaltas() {
+  const totalFaltas = Object.values(faltas).reduce((a, b) => a + b, 0);
+  const restante = Math.max(LIMITE_FALTAS_REPROVACAO - totalFaltas, 0);
+  const statusGeral = totalFaltas >= LIMITE_FALTAS_REPROVACAO
+    ? { label: 'REPROVADO POR FALTAS', cor: 'var(--danger)' }
+    : totalFaltas >= LIMITE_FALTAS_REPROVACAO * 0.75
+    ? { label: 'ATENÇÃO — Risco de Reprovação', cor: 'var(--warn)' }
+    : { label: 'FREQUÊNCIA REGULAR', cor: 'var(--success)' };
+
+  const sb = document.getElementById('summary-faltas');
+  sb.innerHTML = `
+    <div class="summary-box">
+      <div class="big" style="color:var(--danger)">${totalFaltas}</div>
+      <div class="lbl">Total de Faltas</div>
+    </div>
+    <div class="summary-box">
+      <div class="big" style="color:var(--warn)">${LIMITE_FALTAS_REPROVACAO}</div>
+      <div class="lbl">Limite para Reprovar</div>
+    </div>
+    <div class="summary-box">
+      <div class="big" style="color:var(--success)">${restante}</div>
+      <div class="lbl">Faltas Restantes</div>
+    </div>
+    <div class="summary-box" style="border-top:4px solid ${statusGeral.cor}">
+      <div class="big" style="color:${statusGeral.cor};font-size:1.1rem">${totalFaltas >= LIMITE_FALTAS_REPROVACAO ? '✘' : '✔'}</div>
+      <div class="lbl" style="font-weight:700;color:${statusGeral.cor}">${statusGeral.label}</div>
+    </div>
+  `;
+
+  const grid = document.getElementById('cards-faltas');
+  grid.innerHTML = '';
+
+  materias.forEach(m => {
+    const f = faltas[m.id];
+    const st = statusFalta(m);
+    const pct = Math.min((f / LIMITE_FALTAS_REPROVACAO) * 100, 100);
+    const fillColor = f >= LIMITE_FALTAS_REPROVACAO ? 'var(--danger)' : f >= LIMITE_FALTAS_REPROVACAO * 0.75 ? 'var(--warn)' : 'var(--success)';
+    const restanteM = Math.max(LIMITE_FALTAS_REPROVACAO - f, 0);
+
+    const card = document.createElement('div');
+    card.className = `card ${m.id}`;
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-icon ${m.id}">${m.icone}</div>
+        <div>
+          <div class="card-title">${m.nome}</div>
+          <div class="card-sub">${m.professor}</div>
+        </div>
+        <span class="badge ${st.cls}" style="margin-left:auto">${st.label}</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Faltas acumuladas</span>
+          <span><strong>${f}</strong> / ${LIMITE_FALTAS_REPROVACAO}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${fillColor}"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="stat-row">
+          <span class="label">Faltas registradas</span>
+          <span class="value" style="color:${fillColor}">${f}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Limite de reprovação</span>
+          <span class="value">${LIMITE_FALTAS_REPROVACAO}</span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Pode faltar mais</span>
+          <span class="value" style="color:var(--success)">${restanteM} vezes</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* =========================================================
+   RENDERIZAR HORÁRIO
+   ========================================================= */
+
+function renderHorario() {
+  const tbody = document.getElementById('schedule-body');
+  tbody.innerHTML = '';
+
+  horarios.forEach((h, i) => {
+    const tr = document.createElement('tr');
+    const isIntervalo = h.includes('Intervalo');
+
+    if (isIntervalo) {
+      tr.innerHTML = `
+        <td colspan="6" style="text-align:center;background:#f1f3f4;color:#9aa0a6;font-weight:600;font-size:.82rem;padding:8px">
+          ☕ ${h}
+        </td>`;
+    } else {
+      let cells = `<td style="font-weight:600;font-size:.82rem;color:var(--muted);white-space:nowrap">${h}</td>`;
+      grade[i].forEach(id => {
+        if (!id) {
+          cells += `<td><span class="slot vazio">—</span></td>`;
+        } else {
+          cells += `<td><span class="slot ${id}">${iconeMateria(id)} ${nomeMateria(id)}</span></td>`;
+        }
+      });
+      tr.innerHTML = cells;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+/* =========================================================
+   RENDERIZAR PROFESSORES
+   ========================================================= */
+
+function renderProfessores() {
+  const tbody = document.getElementById('prof-body');
+  tbody.innerHTML = '';
+
+  materias.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <span class="card-icon ${m.id}" style="width:32px;height:32px;font-size:1rem">${m.icone}</span>
+          <strong>${m.nome}</strong>
+        </span>
+      </td>
+      <td>${m.professor}</td>
+      <td><a href="mailto:${m.email}" style="color:var(--primary)">${m.email}</a></td>
+      <td>${m.dias.map(d => `<span class="badge badge-info" style="margin:2px">${d}</span>`).join('')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+
+renderNotas();
+renderFaltas();
+renderHorario();
+renderProfessores();
+</script>
+</body>
+</html>
